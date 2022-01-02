@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-title-in-document-head */
 import { GetServerSideProps } from "next"
 import { getSession } from "next-auth/react"
+import { redirect } from "next/dist/server/api-utils"
 import Head from "next/head"
 import { RichText } from "prismic-dom"
 import { getPrismicClient } from "../../src/services/prismic"
@@ -41,7 +42,15 @@ export const getServerSideProps: GetServerSideProps = async ({ req, params }) =>
     const session = await getSession({ req })
     const { slug } = params
 
-    console.log(session)
+    
+    if (!session?.activeSubscription) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false
+            }
+        }
+    }
 
     const prismic = getPrismicClient()
     const response = await prismic.getByUID('post', String(slug), {})
